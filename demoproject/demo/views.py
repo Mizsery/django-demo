@@ -7,7 +7,7 @@ from django.views import generic
 from django.views.generic import CreateView
 
 from demo.forms import RegisterUserForm
-from demo.models import User, Order, Product, Cart, ProductInOrder
+from demo.models import User, Order, Product, Cart, ProductInOrder, Category
 
 
 # Create your views here.
@@ -25,13 +25,37 @@ def validate_username(request):
     return JsonResponse(response);
 
 
+def validate_email(request):
+    email = request.GET.get('email', None)
+    response = {
+        'is_taken': User.objects.filter(email__iexact=email).exists()
+    }
+    return JsonResponse(response);
+
+
 def about(request):
-    return render(request, 'demo/about.html')
+    products = Product.objects.filter(count__gte=1).order_by('-date')[:5]
+    return render(request, 'demo/about.html', context={
+        'products': products
+    })
 
 
 def catalog(request):
-    products = Product.objects.filter(count__gte=1)
+    category = request.GET.get('category')
+
+    if category:
+        products = Product.objects.filter(count__gte=1, category=category)
+    else:
+        products = Product.objects.filter(count__gte=1)
+
+    order_by = request.GET.get('order_by')
+    if order_by:
+        products = products.order_by(order_by)
+    else:
+        products = products.order_by('-date')
+
     return render(request, 'demo/catalog.html', context={
+        'category': Category.objects.all(),
         'products': products
     })
 
@@ -40,7 +64,7 @@ def contact(request):
     return render(request, 'demo/contact.html')
 
 
-def product(request):
+def product(request, pk):
     return render(request, 'demo/product.html')
 
 

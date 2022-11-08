@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import FileExtensionValidator
 from django.db import models
+from django.urls import reverse
 from django.utils.crypto import get_random_string
 
 
@@ -21,8 +22,12 @@ class User(AbstractUser):
 
     USERNAME_FIELD = 'username'
 
+    def full_name(self):
+        # return self.name + ' ' + self.surname + ' ' + self.patronymic;
+        return ' '.join([self.name, self.surname, self.patronymic])
+
     def __str__(self):
-        return self.name + " " + str(self.surname)
+        return self.full_name()
 
 
 class Product(models.Model):
@@ -35,6 +40,9 @@ class Product(models.Model):
     price = models.DecimalField(verbose_name='Стоимость', blank=False, max_digits=10, decimal_places=2, default=0.00)
     count = models.IntegerField(verbose_name='Количество', blank=False, default=1)
     category = models.ForeignKey('Category', verbose_name='Категория', on_delete=models.CASCADE)
+
+    def get_absolute_url(self):
+        return reverse('product', args=[str(self.id)])
 
     def __str__(self):
         return self.name
@@ -60,8 +68,17 @@ class Order(models.Model):
     rejection_reason = models.TextField(verbose_name='Причина отказа', blank=True)
     products = models.ManyToManyField(Product, through='ProductInOrder', related_name='orders')
 
+    def count_product(self):
+        count = 0
+        for item_order in self.productinorder_set.all():
+            count += item_order.count
+        return count
+
     def status_verbose(self):
         return dict(self.STATUS_CHOICES)[self.status]
+
+    def __str__(self):
+        return self.date.ctime() + ' | ' + self.user.full_name() + ' | ' + str(self.count_product())
 
 
 class ProductInOrder(models.Model):

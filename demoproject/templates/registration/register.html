@@ -1,31 +1,51 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Регистрация</h1>
-<form method="post">
-    {{ form.as_p}}
-    {% csrf_token %}
-    <button type="submit" class="btn btn-primary">Регистрация</button>
-</form>
+    <h1>Регистрация</h1>
+    <form method="post">
+        {{ form.as_p }}
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Регистрация</button>
+    </form>
 
-<script>
-    document.querySelector('#id_username').addEventListener('blur', async (event) => {
-        const res = await fetch(`/validate_username?username=${event.target.value}`).then(res => res.json());
-        event.target.parentElement.querySelector('.errorList')?.remove();
-        const errors = document.createElement('ul');
-        errors.classList.add('errorList');
+    <script>
+        document.querySelector('#id_username').addEventListener('blur', async (event) => {
+            const res = await fetch(`/validate_username?username=${event.target.value}`).then(res => res.json());
+            event.target.parentElement.querySelector('.errorList')?.remove();
+            const errors = document.createElement('ul');
+            errors.classList.add('errorList');
 
-        if (res.is_taken) {
-            errors.innerHTML = '<li>Пользователь с таким именем уже есть</li>';
-        }
-        if (event.target.value.length === 0) {
-            errors.innerHTML += '<li>Логин не может быть пустым</li>';
-        }
-        const re = new RegExp("^[a-zA-Z0-9]+$");
+            if (res.is_taken) {
+                errors.innerHTML = '<li>Пользователь с таким именем уже есть</li>';
+            }
+            if (event.target.value.length === 0) {
+                errors.innerHTML += '<li>Логин не может быть пустым</li>';
+            }
+            const re = new RegExp("^[a-zA-Z0-9]+$");
 
-        if (!re.test(event.target.value)) {
-            errors.innerHTML += '<li>Разрешены только латиница, цифры или тире</li>';
-        }
-        event.target.parentElement.append(errors);
-    })
-</script>
+            if (!re.test(event.target.value)) {
+                errors.innerHTML += '<li>Разрешены только латиница, цифры или тире</li>';
+            }
+            event.target.parentElement.append(errors);
+        })
+        document.querySelector('#id_email').addEventListener('blur', async (event) => {
+            const res = await fetch(`/validate_email?email=${event.target.value}`).then(res => res.json());
+            event.target.parentElement.querySelector('.errorList')?.remove();
+            const errors = document.createElement('ul');
+            errors.classList.add('errorList');
+
+            if (res.is_taken) {
+                errors.innerHTML = '<li>Такой email уже существует</li>';
+            }
+            if (event.target.value.length === 0) {
+                errors.innerHTML += '<li>Email не может быть пустым</li>';
+            }
+
+            const re = new RegExp("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$");
+            if (!re.test(event.target.value)) {
+                errors.innerHTML += '<li>Не валидная почта</li>';
+            }
+
+            event.target.parentElement.append(errors);
+        })
+    </script>
 {% endblock %}
