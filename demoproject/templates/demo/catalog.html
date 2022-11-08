@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Каталог</h1>
+<ul>
+    {% for item in products %}
+    <li>
+        <b>{{ item.name }}</b> {{ item.price }} p. (Остаток: {{ item.count }})
+        {% if user.is_authenticated %}
+        <a href="#" onclick="toCart(this,{{ item.pk}})">В корзину</a>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+<script>
+    toCart = async (target, pk) => {
+        const res = await fetch(`/to_cart/${pk}`).then(res => res.json());
+        const message = document.createElement('div');
+        if (res.count) {
+            message.innerHTML = `Товар добавлен в корзину. Общее кол-во товаров в корзине: ${res.count}`;
+        } else {
+            message.innerHTML = 'Больше нельзя добавить';
+        }
+        target.parentElement.append(message);
+        setTimeout(() => message.remove(), 1000);
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Мои заказы</h1>
+    {% if order_list %}
+        <ol>
+            {% for order in order_list %}
+                <li>
+                    {{ order.date }} ({{ order.status }})
+                    {% if order.status == 'new' %}
+                        <a href="{% url 'delete_order' order.pk %}">Удалить заказ</a>
+                    {% endif %}
+                    {% if order.productinorder_set.all %}
+                        <ul>
+                            {% for item in order.productinorder_set.all %}
+                                <li>{{ item.product.name }} | Количество: {{ item.count }} |
+                                    Стоимость: {{ item.price }} </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ol>
+    {% else %}
+        <p>У вас пока нет заказов</p>
+    {% endif %}
+{% endblock %}
